@@ -156,13 +156,13 @@ void Game::startPlay()
 
 bool Game::canPlayCard(int player, const Card &card) const
 {
-    return m_phase == Phase::Play && contains(m_hand[player], card) && count() + card.value() <= 31;
+    return m_phase == Phase::Play && contains(m_hand[player], card) && count() + value(card) <= 31;
 }
 
 bool Game::canPlay(int player) const
 {
     for (const Card &c : m_hand[player])
-        if (count() + c.value() <= 31)
+        if (count() + value(c) <= 31)
             return true;
     return false;
 }

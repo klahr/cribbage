@@ -193,36 +193,36 @@ Card Bot::playThoughtful(const Game &game, int player, const Cards &legal)
         Cards pile = game.pile();
         pile.push_back(c);
         const int count = pileCount(pile);
-        double value = peggingPoints(pile);
+        double worth = peggingPoints(pile);
 
         if (count < 31 && !opponentOut && !unseen.empty()) {
             // What the opponent is likely to peg in reply.
             double reply = 0;
             for (const Card &u : unseen) {
-                if (count + u.value() > 31)
+                if (count + value(u) > 31)
                     continue;
                 Cards next = pile;
                 next.push_back(u);
                 reply += peggingPoints(next);
             }
             const double chance = std::min(1.0, opponentCards / 4.0);
-            value -= 1.6 * chance * reply / unseen.size() * std::min(opponentCards, 3);
+            worth -= 1.6 * chance * reply / unseen.size() * std::min(opponentCards, 3);
         }
 
         // Keep the cards that can extend the play for later, and lead small.
         if (opponentOut) {
             int follow = 0;
             for (const Card &k : game.hand(player))
-                if (k != c && count + k.value() <= 31)
+                if (k != c && count + value(k) <= 31)
                     ++follow;
-            value += 0.3 * follow;
+            worth += 0.3 * follow;
         }
-        if (game.pile().empty() && c.value() == 5)
-            value -= 1.0;
-        value += 0.01 * c.value();
+        if (game.pile().empty() && value(c) == 5)
+            worth -= 1.0;
+        worth += 0.01 * value(c);
 
-        if (value > best) {
-            best = value;
+        if (worth > best) {
+            best = worth;
             choice = c;
         }
     }

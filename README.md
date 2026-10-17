@@ -13,6 +13,10 @@ Needs Sailfish OS 5.1 or newer, on aarch64 or armv7hl.
 
 ## Building
 
+The card code shared with the other card games is the
+[sailfish-cards](https://github.com/klahr/sailfish-cards) submodule, so clone with
+`git clone --recursive`, or run `git submodule update --init` in an existing clone.
+
 With the [Sailfish SDK](https://docs.sailfishos.org/Tools/Sailfish_SDK/), from the source directory:
 
 ```

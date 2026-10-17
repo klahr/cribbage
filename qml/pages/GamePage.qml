@@ -2,7 +2,8 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import harbour.cribbage 1.0
 import "../components"
-import "../cards.js" as Cards
+import "../cards"
+import "../cards/cards.js" as Cards
 
 Page {
     id: page
