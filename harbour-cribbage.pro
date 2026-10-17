@@ -22,6 +22,7 @@ HEADERS += src/gamecontroller.h \
     src/core/scoring.h
 
 DISTFILES += qml/harbour-cribbage.qml \
+    qml/components/DashedSlot.qml \
     qml/components/ScoreTrack.qml \
     qml/cover/CoverPage.qml \
     qml/pages/GamePage.qml \
