@@ -1,0 +1,4 @@
+* Sat Oct 17 2026 Joachim Klahr <klahr@r8.rs> 0.1.0-1
+- First release: two-player cribbage against a bot in three levels, with
+  the cut for deal, the play, the show and the crib counted one score at a
+  time, a peg board, scoring speed setting and won and lost games per level

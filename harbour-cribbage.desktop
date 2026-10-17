@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-cribbage
+Exec=harbour-cribbage
+Name=Cribbage
+Name[sv]=Cribbage
+
+[X-Sailjail]
+OrganizationName=rs.r8
+ApplicationName=harbour-cribbage
+Permissions=

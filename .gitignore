@@ -1,0 +1,10 @@
+.qmake.stash
+/Makefile
+*.o
+moc_*
+/harbour-cribbage
+tests/test_rules
+RPMS/
+# Developer device password for deploying to the phone
+passwd
+*.pro.user
