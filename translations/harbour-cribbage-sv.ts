@@ -198,293 +198,297 @@
 <context>
     <name>GamePage</name>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="44" />
+        <location filename="../qml/pages/GamePage.qml" line="47" />
         <source>Easy</source>
         <translation>Lätt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="44" />
+        <location filename="../qml/pages/GamePage.qml" line="47" />
         <source>Medium</source>
         <translation>Medel</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="44" />
+        <location filename="../qml/pages/GamePage.qml" line="47" />
         <source>Hard</source>
         <translation>Svår</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="76" />
+        <location filename="../qml/pages/GamePage.qml" line="80" />
         <source>Starting a new game</source>
         <translation>Börjar ett nytt spel</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="333" />
+        <location filename="../qml/pages/GamePage.qml" line="351" />
         <source>About and rules</source>
         <translation>Om och regler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="337" />
+        <location filename="../qml/pages/GamePage.qml" line="355" />
         <source>Settings</source>
         <translation>Inställningar</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="341" />
+        <location filename="../qml/pages/GamePage.qml" line="359" />
         <source>Online table</source>
         <translation>Bordet online</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="341" />
+        <location filename="../qml/pages/GamePage.qml" line="359" />
         <source>Play online</source>
         <translation>Spela online</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="346" />
-        <location filename="../qml/pages/GamePage.qml" line="637" />
+        <location filename="../qml/pages/GamePage.qml" line="364" />
+        <location filename="../qml/pages/GamePage.qml" line="681" />
         <source>New game</source>
         <translation>Nytt spel</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="367" />
+        <location filename="../qml/pages/GamePage.qml" line="385" />
         <source>You</source>
         <translation>Du</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="374" />
+        <location filename="../qml/pages/GamePage.qml" line="392" />
         <source>Bot</source>
         <translation>Bot</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="413" />
+        <location filename="../qml/pages/GamePage.qml" line="431" />
         <source>Starter</source>
         <translation>Vändkort</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="413" />
+        <location filename="../qml/pages/GamePage.qml" line="431" />
         <source>Deck</source>
         <translation>Lek</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="423" />
+        <location filename="../qml/pages/GamePage.qml" line="465" />
         <source>Count %1</source>
         <translation>Summa %1</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="464" />
+        <location filename="../qml/pages/GamePage.qml" line="507" />
         <source>Cut for deal: tap a card. Lowest card deals.</source>
         <translation>Dra om given: tryck på ett kort. Lägst kort ger.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="466" />
+        <location filename="../qml/pages/GamePage.qml" line="509" />
         <source>%1 is cutting…</source>
         <translation>%1 drar…</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="467" />
+        <location filename="../qml/pages/GamePage.qml" line="510" />
         <source>The bot is cutting…</source>
         <translation>Botten drar…</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="469" />
+        <location filename="../qml/pages/GamePage.qml" line="512" />
         <source>A tie. Cut again.</source>
         <translation>Lika. Dra igen.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="470" />
+        <location filename="../qml/pages/GamePage.qml" line="513" />
         <source>Your card is lower. You deal.</source>
         <translation>Ditt kort är lägre. Du ger.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="471" />
+        <location filename="../qml/pages/GamePage.qml" line="514" />
         <source>%1's card is lower and deals.</source>
         <translation>%1s kort är lägre och ger.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="472" />
+        <location filename="../qml/pages/GamePage.qml" line="515" />
         <source>The bot's card is lower. The bot deals.</source>
         <translation>Bottens kort är lägre. Botten ger.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="475" />
+        <location filename="../qml/pages/GamePage.qml" line="518" />
         <source>Waiting for the cut</source>
         <translation>Väntar på vändkortet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="476" />
-        <source>Choose two cards for your crib.</source>
-        <translation>Välj två kort till din krubba.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GamePage.qml" line="477" />
-        <source>Choose two cards for %1's crib.</source>
-        <translation>Välj två kort till %1s krubba.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GamePage.qml" line="478" />
-        <source>Choose two cards for the bot's crib.</source>
-        <translation>Välj två kort till bottens krubba.</translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/GamePage.qml" line="481" />
+        <location filename="../qml/pages/GamePage.qml" line="525" />
         <source>No card fits under 31.</source>
         <translation>Inget kort ryms under 31.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="483" />
+        <location filename="../qml/pages/GamePage.qml" line="527" />
         <source>Your turn. Tap a card to play it.</source>
         <translation>Din tur. Tryck på ett kort för att spela det.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="485" />
+        <location filename="../qml/pages/GamePage.qml" line="529" />
         <source>%1 is thinking…</source>
         <translation>%1 tänker…</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="486" />
+        <location filename="../qml/pages/GamePage.qml" line="530" />
         <source>The bot is thinking…</source>
         <translation>Botten tänker…</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="512" />
+        <location filename="../qml/pages/GamePage.qml" line="454" />
+        <location filename="../qml/pages/GamePage.qml" line="556" />
         <source>Your crib</source>
         <translation>Din krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="513" />
+        <location filename="../qml/pages/GamePage.qml" line="455" />
+        <location filename="../qml/pages/GamePage.qml" line="521" />
+        <location filename="../qml/pages/GamePage.qml" line="557" />
         <source>%1's crib</source>
         <translation>%1s krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="513" />
+        <location filename="../qml/pages/GamePage.qml" line="455" />
+        <location filename="../qml/pages/GamePage.qml" line="557" />
         <source>Bot's crib</source>
         <translation>Bottens krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="514" />
+        <location filename="../qml/pages/GamePage.qml" line="519" />
+        <source>Choose two cards for %1.</source>
+        <translation>Välj två kort till %1.</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GamePage.qml" line="520" />
+        <source>your crib</source>
+        <translation>din krubba</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GamePage.qml" line="522" />
+        <source>the bot's crib</source>
+        <translation>bottens krubba</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/GamePage.qml" line="558" />
         <source>Your hand</source>
         <translation>Din hand</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="515" />
+        <location filename="../qml/pages/GamePage.qml" line="559" />
         <source>%1's hand</source>
         <translation>%1s hand</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="515" />
+        <location filename="../qml/pages/GamePage.qml" line="559" />
         <source>Bot's hand</source>
         <translation>Bottens hand</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="542" />
+        <location filename="../qml/pages/GamePage.qml" line="586" />
         <source>%1 × %2</source>
         <translation>%1 × %2</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="556" />
+        <location filename="../qml/pages/GamePage.qml" line="600" />
         <source>Nineteen — nothing to count</source>
         <translation>Nitton — inget att räkna</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="573" />
+        <location filename="../qml/pages/GamePage.qml" line="617" />
         <source>You won</source>
         <translation>Du vann</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="574" />
+        <location filename="../qml/pages/GamePage.qml" line="618" />
         <source>%1 won</source>
         <translation>%1 vann</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="574" />
+        <location filename="../qml/pages/GamePage.qml" line="618" />
         <source>The bot won</source>
         <translation>Botten vann</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="585" />
+        <location filename="../qml/pages/GamePage.qml" line="629" />
         <source>%1 to %2</source>
         <translation>%1 mot %2</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="587" />
+        <location filename="../qml/pages/GamePage.qml" line="631" />
         <source>Double skunk!</source>
         <translation>Dubbel skunk!</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="589" />
+        <location filename="../qml/pages/GamePage.qml" line="633" />
         <source>Skunk!</source>
         <translation>Skunk!</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="591" />
+        <location filename="../qml/pages/GamePage.qml" line="635" />
         <source>You counted out.</source>
         <translation>Du räknade dig i mål.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="592" />
+        <location filename="../qml/pages/GamePage.qml" line="636" />
         <source>%1 counted out.</source>
         <translation>%1 räknade sig i mål.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="592" />
+        <location filename="../qml/pages/GamePage.qml" line="636" />
         <source>The bot counted out.</source>
         <translation>Botten räknade sig i mål.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="593" />
+        <location filename="../qml/pages/GamePage.qml" line="637" />
         <source>You pegged out.</source>
         <translation>Du nådde mål i spelet.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="594" />
+        <location filename="../qml/pages/GamePage.qml" line="638" />
         <source>%1 pegged out.</source>
         <translation>%1 nådde mål i spelet.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="594" />
+        <location filename="../qml/pages/GamePage.qml" line="638" />
         <source>The bot pegged out.</source>
         <translation>Botten nådde mål i spelet.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="621" />
+        <location filename="../qml/pages/GamePage.qml" line="665" />
         <source>To your crib</source>
         <translation>Till din krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="622" />
+        <location filename="../qml/pages/GamePage.qml" line="666" />
         <source>To %1's crib</source>
         <translation>Till %1s krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="622" />
+        <location filename="../qml/pages/GamePage.qml" line="666" />
         <source>To bot's crib</source>
         <translation>Till bottens krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="627" />
+        <location filename="../qml/pages/GamePage.qml" line="671" />
         <source>Go</source>
         <translation>Go</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="632" />
+        <location filename="../qml/pages/GamePage.qml" line="676" />
         <source>Next deal</source>
         <translation>Nästa giv</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="632" />
+        <location filename="../qml/pages/GamePage.qml" line="676" />
         <source>Continue</source>
         <translation>Fortsätt</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="648" />
+        <location filename="../qml/pages/GamePage.qml" line="692" />
         <source>Two cards for your crib</source>
         <translation>Två kort till din krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="649" />
+        <location filename="../qml/pages/GamePage.qml" line="693" />
         <source>Two cards for %1's crib</source>
         <translation>Två kort till %1s krubba</translation>
     </message>
     <message>
-        <location filename="../qml/pages/GamePage.qml" line="650" />
+        <location filename="../qml/pages/GamePage.qml" line="694" />
         <source>Two cards for the bot's crib</source>
         <translation>Två kort till bottens krubba</translation>
     </message>
@@ -606,67 +610,77 @@
 <context>
     <name>RulesPage</name>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="16" />
+        <location filename="../qml/pages/RulesPage.qml" line="22" />
         <source>Cribbage</source>
         <translation>Cribbage</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="20" />
+        <location filename="../qml/pages/RulesPage.qml" line="26" />
         <source>The game</source>
         <translation>Spelet</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="20" />
+        <location filename="../qml/pages/RulesPage.qml" line="26" />
         <source>Two players race to 121 points. The game ends the moment either player reaches 121, even in the middle of a hand. Losing with fewer than 91 points is a skunk, fewer than 61 a double skunk.</source>
         <translation>Två spelare tävlar om att först nå 121 poäng. Spelet slutar i samma stund som någon når 121, även mitt i en giv. Att förlora med färre än 91 poäng är skunk, färre än 61 dubbel skunk.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="21" />
+        <location filename="../qml/pages/RulesPage.qml" line="27" />
         <source>The deal</source>
         <translation>Given</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="21" />
+        <location filename="../qml/pages/RulesPage.qml" line="27" />
         <source>Both players cut the pack and the lower card deals first, ace low; a tie is cut again. Each player gets six cards and lays away two to the crib, which belongs to the dealer. The deal alternates. The starter is then cut; if it is a jack the dealer pegs two for his heels.</source>
         <translation>Båda spelarna drar ett kort ur leken och lägst kort ger först, ess lägst; vid lika dras det om. Varje spelare får sex kort och lägger två i krubban, som tillhör den som ger. Given växlar. Sedan vänds ett vändkort upp; är det en knekt får given två poäng.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="22" />
+        <location filename="../qml/pages/RulesPage.qml" line="28" />
         <source>The play</source>
         <translation>Spelet om korten</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="22" />
+        <location filename="../qml/pages/RulesPage.qml" line="28" />
         <source>Starting with the non-dealer, players lay cards in turn, calling the running count, which may not pass 31. Fifteen and 31 score two. A pair scores two, three of a kind six and four of a kind twelve. A run of three or more cards, in any order, scores one per card. A player who cannot play says go; the other plays on as far as possible and pegs one for go, or two for exactly 31. Then the count starts again. The last card of the play scores one.</source>
         <translation>Med början hos den som inte ger lägger spelarna kort i tur och ordning och säger summan, som inte får gå över 31. Femton och 31 ger två. Ett par ger två, tretal sex och fyrtal tolv. En följd av tre kort eller fler, i vilken ordning som helst, ger en poäng per kort. Den som inte kan spela säger go; den andra spelar vidare så långt det går och får en poäng för go, eller två för exakt 31. Sedan börjar summan om. Sista kortet i spelet ger en poäng.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="23" />
+        <location filename="../qml/pages/RulesPage.qml" line="29" />
         <source>The show</source>
         <translation>Räkningen</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="23" />
+        <location filename="../qml/pages/RulesPage.qml" line="29" />
         <source>The non-dealer counts first, then the dealer, then the crib, each with the starter. Every combination adding up to fifteen scores two, each pair two, each run one per card. Four cards of one suit in the hand score four, five with the starter; the crib only scores a flush of five. The jack of the starter's suit scores one for his nobs.</source>
         <translation>Den som inte ger räknar först, sedan given och sist krubban, var och en med vändkortet. Varje kombination som blir femton ger två, varje par två och varje följd en per kort. Fyra kort i samma färg på handen ger fyra, fem med vändkortet; krubban ger bara färg om alla fem är i samma färg. Knekten i vändkortets färg ger en poäng.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="24" />
+        <location filename="../qml/pages/RulesPage.qml" line="30" />
         <source>Playing here</source>
         <translation>Att spela här</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="24" />
-        <source>To cut for deal, tap any card in the spread pack. Tap two cards to lay them away and then tap the button. During the play, tap a card to lay it down; cards that would pass 31 are dimmed. Your points are shown in blue and the bot's in red. The board shows each player's front and back peg; the taller marks are the skunk lines.</source>
-        <translation>Tryck på valfritt kort i den utbredda leken för att dra om given. Tryck på två kort för att lägga dem i krubban och sedan på knappen. Under spelet trycker du på ett kort för att lägga ut det; kort som skulle gå över 31 är nedtonade. Dina poäng visas i blått och bottens i rött. Tavlan visar varje spelares främre och bakre pinne; de högre strecken är skunkgränserna.</translation>
+        <location filename="../qml/pages/RulesPage.qml" line="30" />
+        <source>To cut for deal, tap any card in the spread pack. Tap two cards to lay them away and then tap the button. During the play, tap a card to lay it down; cards that would pass 31 are dimmed. Your points are shown in %1 and the bot's in %2. The board shows each player's front and back peg; the taller marks are the skunk lines.</source>
+        <translation>Tryck på valfritt kort i den utbredda leken för att dra om given. Tryck på två kort för att lägga dem i krubban och sedan på knappen. Under spelet trycker du på ett kort för att lägga ut det; kort som skulle gå över 31 är nedtonade. Dina poäng visas i %1 och bottens i %2. Tavlan visar varje spelares främre och bakre pinne; de högre strecken är skunkgränserna.</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="40" />
+        <location filename="../qml/pages/RulesPage.qml" line="30" />
+        <source>blue</source>
+        <translation>blått</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/RulesPage.qml" line="30" />
+        <source>red</source>
+        <translation>rött</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/RulesPage.qml" line="47" />
         <source>About</source>
         <translation>Om</translation>
     </message>
     <message>
-        <location filename="../qml/pages/RulesPage.qml" line="45" />
+        <location filename="../qml/pages/RulesPage.qml" line="52" />
         <source>Cribbage %1 for Sailfish OS.</source>
         <translation>Cribbage %1 för Sailfish OS.</translation>
     </message>

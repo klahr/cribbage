@@ -249,18 +249,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose two cards for your crib.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose two cards for %1&apos;s crib.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose two cards for the bot&apos;s crib.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No card fits under 31.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -390,6 +378,18 @@
     </message>
     <message>
         <source>Two cards for the bot&apos;s crib</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose two cards for %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>your crib</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>the bot&apos;s crib</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -527,15 +527,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>To cut for deal, tap any card in the spread pack. Tap two cards to lay them away and then tap the button. During the play, tap a card to lay it down; cards that would pass 31 are dimmed. Your points are shown in blue and the bot&apos;s in red. The board shows each player&apos;s front and back peg; the taller marks are the skunk lines.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cribbage %1 for Sailfish OS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To cut for deal, tap any card in the spread pack. Tap two cards to lay them away and then tap the button. During the play, tap a card to lay it down; cards that would pass 31 are dimmed. Your points are shown in %1 and the bot&apos;s in %2. The board shows each player&apos;s front and back peg; the taller marks are the skunk lines.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>red</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -34,6 +34,9 @@ Page {
     property var heldPlayed: null     // the count kept on the table while it is scored
     property var previousPlayed: []
     property int shownStepKey: -1
+    // The crib lies in its slot on the table until the first card is played.
+    readonly property bool cribInSlot: game.phase === Cribbage.Discard
+                                       || game.phase === Cribbage.Play && game.played.length === 0
     readonly property bool revealing: current !== null || revealQueue.length > 0
     readonly property string panel: (game.phase === Cribbage.Show
                                      || (game.phase === Cribbage.GameOver && game.endedInShow && revealing))
@@ -46,13 +49,14 @@ Page {
 
     allowedOrientations: Orientation.Portrait
 
-    // Where the cards you lay away gather, on the table beside the deck
-    // the crib goes to.
+    // Where the cards you lay away gather before they go: on the table
+    // between the deck and the crib's slot.
     function cribArea() {
         var off = Math.round(cardWidth * 0.5)
         var w = cardWidth + off
         var left = margin + cardWidth + Theme.paddingLarge
-        return { x: left + (page.width - margin - left - w) / 2, y: cluster.y + tableRow.y + Theme.paddingLarge,
+        var right = page.width - margin - cardWidth - Theme.paddingLarge
+        return { x: left + (right - left - w) / 2, y: cluster.y + tableRow.y + Theme.paddingLarge,
                  width: w, height: cardHeight, off: off }
     }
 
@@ -75,6 +79,9 @@ Page {
         else
             remorse.execute(qsTr("Starting a new game"), function() { game.newGame() })
     }
+
+    // A line about one player, in their colour.
+    function coloured(player, text) { return "<font color=\"" + Cards.playerColor(player) + "\">" + text + "</font>" }
 
     function shownScore(player) {
         var real = player === 0 ? game.humanScore : game.botScore
@@ -241,14 +248,25 @@ Page {
         if (game.starter >= 0)
             p[game.starter] = { x: deckX, y: deckY, z: 2, down: false, role: "starter", delay: 0 }
 
+        // While laying away, the crib fills its slot on the table; the bot
+        // holds on to its two until you lay away yours.
+        var slotX = w - margin - cw
+        var botLaying = game.phase === Cribbage.Discard && !game.humanDiscarded
+        if (!botLaying && cribInSlot) {
+            ids = game.crib
+            for (i = 0; i < ids.length; ++i)
+                p[ids[i]] = { x: slotX + i * Theme.paddingSmall / 2, y: deckY + i * Theme.paddingSmall / 2, z: 60 + i,
+                              down: true, role: "crib", delay: 0 }
+        }
+
         // The crib waits face down with the deck until it is counted; the
         // board shows whose it is.
-        ids = game.crib
+        ids = cribInSlot ? [] : game.crib
         for (i = 0; i < ids.length; ++i)
             p[ids[i]] = { x: deckX + Theme.paddingSmall, y: deckY + Theme.paddingSmall, z: 1, down: true, role: "crib", delay: i * 60 }
 
         // The bot's cards, fanned against the right edge.
-        ids = showing ? game.botKept : game.botHand
+        ids = showing ? game.botKept : botLaying ? page.plainList(game.botHand).concat(page.plainList(game.crib)) : game.botHand
         n = ids.length
         off = n > 1 ? Math.min(cw * 0.5, (w - margin - (deckX + 2 * cw + Theme.paddingLarge)) / (n - 1)) : 0
         for (i = 0; i < n; ++i)
@@ -415,6 +433,30 @@ Page {
                         font.pixelSize: Theme.fontSizeExtraSmall
                     }
 
+                    // Where the crib goes, in the colour of whose it is.
+                    DashedSlot {
+                        id: cribSlot
+                        x: parent.width - margin - cardWidth
+                        y: Theme.paddingLarge
+                        width: cardWidth
+                        height: cardHeight
+                        color: Cards.playerColor(game.dealer)
+                        opacity: page.cribInSlot ? 1 : 0
+                        visible: opacity > 0
+                        Behavior on opacity { FadeAnimation { } }
+                    }
+                    Label {
+                        anchors { right: cribSlot.right; top: deckLabel.top }
+                        // Only while laying away: the count takes its place in the play.
+                        opacity: game.phase === Cribbage.Discard ? 1 : 0
+                        visible: opacity > 0
+                        Behavior on opacity { FadeAnimation { } }
+                        text: page.humanCrib ? qsTr("Your crib")
+                              : game.opponent ? qsTr("%1's crib").arg(game.opponent) : qsTr("Bot's crib")
+                        color: Cards.playerColor(game.dealer)
+                        font.pixelSize: Theme.fontSizeExtraSmall
+                    }
+
                     Label {
                         id: countLabel
                         anchors { right: parent.right; rightMargin: margin; bottom: parent.bottom }
@@ -455,35 +497,37 @@ Page {
                             width: parent.width
                             height: fontMetrics.height
                             truncationMode: TruncationMode.Fade
+                            textFormat: Text.StyledText
                             color: Theme.secondaryColor
                             font.pixelSize: Theme.fontSizeSmall
                             text: {
                                 switch (game.phase) {
                                 case Cribbage.Cut:
                                     if (game.humanCut < 0)
-                                        return qsTr("Cut for deal: tap a card. Lowest card deals.")
+                                        return page.coloured(0, qsTr("Cut for deal: tap a card. Lowest card deals."))
                                     if (game.botCut < 0)
-                                        return game.opponent ? qsTr("%1 is cutting…").arg(game.opponent)
-                                                             : qsTr("The bot is cutting…")
+                                        return page.coloured(1, game.opponent ? qsTr("%1 is cutting…").arg(game.opponent)
+                                                                              : qsTr("The bot is cutting…"))
                                     if (game.cutTied)
                                         return qsTr("A tie. Cut again.")
-                                    return game.cutDealer === 0 ? qsTr("Your card is lower. You deal.")
-                                                                : game.opponent ? qsTr("%1's card is lower and deals.").arg(game.opponent)
-                                                                : qsTr("The bot's card is lower. The bot deals.")
+                                    return game.cutDealer === 0 ? page.coloured(0, qsTr("Your card is lower. You deal."))
+                                                                : page.coloured(1, game.opponent ? qsTr("%1's card is lower and deals.").arg(game.opponent)
+                                                                                                 : qsTr("The bot's card is lower. The bot deals."))
                                 case Cribbage.Discard:
                                     if (game.humanDiscarded)
                                         return qsTr("Waiting for the cut")
-                                    return page.humanCrib ? qsTr("Choose two cards for your crib.")
-                                                          : game.opponent ? qsTr("Choose two cards for %1's crib.").arg(game.opponent)
-                                                          : qsTr("Choose two cards for the bot's crib.")
+                                    return qsTr("Choose two cards for %1.")
+                                            .arg(page.humanCrib ? page.coloured(0, qsTr("your crib"))
+                                                                : page.coloured(1, game.opponent ? qsTr("%1's crib").arg(game.opponent)
+                                                                                                 : qsTr("the bot's crib")))
                                 case Cribbage.Play:
                                     if (game.mustSayGo)
-                                        return qsTr("No card fits under 31.")
+                                        return page.coloured(0, qsTr("No card fits under 31."))
                                     if (game.humanTurn)
-                                        return qsTr("Your turn. Tap a card to play it.")
+                                        return page.coloured(0, qsTr("Your turn. Tap a card to play it."))
                                     if (game.botTurn)
-                                        return game.opponent ? qsTr("%1 is thinking…").arg(game.opponent)
-                                                             : qsTr("The bot is thinking…")
+                                        return page.coloured(1, game.opponent ? qsTr("%1 is thinking…").arg(game.opponent)
+                                                                              : qsTr("The bot is thinking…"))
                                 }
                                 return ""
                             }

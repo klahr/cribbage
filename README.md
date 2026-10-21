@@ -15,7 +15,7 @@ Needs Sailfish OS 5.1 or newer, on aarch64 or armv7hl.
 
 ## Building
 
-Online play is shared with the other card games in the
+The card code and online play are shared with the other card games in the
 [sailfish-cards](https://github.com/klahr/sailfish-cards) submodule, so clone with
 `git clone --recursive`, or run `git submodule update --init` in an existing clone.
 

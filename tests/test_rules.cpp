@@ -4,61 +4,16 @@
 #include "../src/core/bot.h"
 #include "../src/core/game.h"
 #include "../src/core/scoring.h"
+#include "cards/testing.h"
 
 #include <algorithm>
 #include <cstdio>
-#include <functional>
 #include <string>
 #include <vector>
 
 using namespace cribbage;
 
 namespace {
-
-int g_failures = 0;
-int g_checks = 0;
-const char *g_test = "";
-
-#define CHECK(cond)                                                                      \
-    do {                                                                                 \
-        ++g_checks;                                                                      \
-        if (!(cond)) {                                                                   \
-            ++g_failures;                                                                \
-            std::printf("FAIL %s (%s:%d): %s\n", g_test, __FILE__, __LINE__, #cond);     \
-        }                                                                                \
-    } while (0)
-
-#define CHECK_EQ(a, b)                                                                   \
-    do {                                                                                 \
-        ++g_checks;                                                                      \
-        const auto va = (a);                                                             \
-        const auto vb = (b);                                                             \
-        if (!(va == vb)) {                                                               \
-            ++g_failures;                                                                \
-            std::printf("FAIL %s (%s:%d): %s == %s (%d vs %d)\n", g_test, __FILE__,      \
-                        __LINE__, #a, #b, int(va), int(vb));                             \
-        }                                                                                \
-    } while (0)
-
-struct Test {
-    const char *name;
-    std::function<void()> body;
-};
-
-std::vector<Test> &tests()
-{
-    static std::vector<Test> all;
-    return all;
-}
-
-struct Register {
-    Register(const char *name, std::function<void()> body) { tests().push_back({name, body}); }
-};
-
-#define TEST(name)                                     \
-    static void name();                                \
-    static Register register_##name(#name, name);      \
-    static void name()
 
 int hand(const std::string &cards, const std::string &starter, bool crib = false)
 {
@@ -1108,12 +1063,5 @@ TEST(stronger_levels_win_more)
 
 int main()
 {
-    for (const Test &t : tests()) {
-        g_test = t.name;
-        const int before = g_failures;
-        t.body();
-        std::printf("%s %s\n", g_failures == before ? "ok  " : "FAIL", t.name);
-    }
-    std::printf("\n%zu tests, %d checks, %d failures\n", tests().size(), g_checks, g_failures);
-    return g_failures ? 1 : 0;
+    return cards::testing::run();
 }
