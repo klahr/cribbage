@@ -4,26 +4,19 @@
 
 namespace cribbage {
 
-namespace {
-
-bool contains(const Cards &cards, const Card &card)
-{
-    return std::find(cards.begin(), cards.end(), card) != cards.end();
-}
-
-void removeCard(Cards &cards, const Card &card)
-{
-    cards.erase(std::find(cards.begin(), cards.end(), card));
-}
-
-} // namespace
-
 Game::Game(unsigned seed)
     : m_rng(seed)
 {
 }
 
 void Game::newGame()
+{
+    Cards deck = fullDeck();
+    std::shuffle(deck.begin(), deck.end(), m_rng);
+    newGame(deck);
+}
+
+void Game::newGame(const Cards &cutDeck)
 {
     m_score[0] = m_score[1] = 0;
     m_previous[0] = m_previous[1] = 0;
@@ -40,8 +33,7 @@ void Game::newGame()
     m_played.clear();
     m_playedBy.clear();
     m_phase = Phase::Cut;
-    m_cutDeck = fullDeck();
-    std::shuffle(m_cutDeck.begin(), m_cutDeck.end(), m_rng);
+    m_cutDeck = cutDeck;
     m_cutIndex[0] = m_cutIndex[1] = -1;
 }
 
@@ -66,13 +58,20 @@ bool Game::finishCut()
 {
     if (m_phase != Phase::Cut || !cutComplete())
         return false;
+    Cards deck = cutTied() ? m_cutDeck : fullDeck();
+    std::shuffle(deck.begin(), deck.end(), m_rng);
+    return finishCut(deck);
+}
+
+bool Game::finishCut(const Cards &deck)
+{
+    if (m_phase != Phase::Cut || !cutComplete())
+        return false;
     if (cutTied()) {
-        std::shuffle(m_cutDeck.begin(), m_cutDeck.end(), m_rng);
+        m_cutDeck = deck;
         m_cutIndex[0] = m_cutIndex[1] = -1;
         return true;
     }
-    Cards deck = fullDeck();
-    std::shuffle(deck.begin(), deck.end(), m_rng);
     newGame(cutDealer(), deck);
     return true;
 }
@@ -108,13 +107,6 @@ void Game::dealFrom(const Cards &deck)
     m_showStep = 0;
     for (int i = 0; i < 12; ++i)
         m_hand[i % 2 == 0 ? pone() : m_dealer].push_back(m_deck[i]);
-}
-
-void Game::dealShuffled()
-{
-    Cards deck = fullDeck();
-    std::shuffle(deck.begin(), deck.end(), m_rng);
-    dealFrom(deck);
 }
 
 void Game::setScores(int first, int second)
@@ -156,13 +148,13 @@ void Game::startPlay()
 
 bool Game::canPlayCard(int player, const Card &card) const
 {
-    return m_phase == Phase::Play && contains(m_hand[player], card) && count() + card.value() <= 31;
+    return m_phase == Phase::Play && contains(m_hand[player], card) && count() + countValue(card) <= 31;
 }
 
 bool Game::canPlay(int player) const
 {
     for (const Card &c : m_hand[player])
-        if (count() + c.value() <= 31)
+        if (count() + countValue(c) <= 31)
             return true;
     return false;
 }
@@ -263,12 +255,24 @@ bool Game::nextShow()
 {
     if (m_phase != Phase::Show)
         return false;
+    Cards deck;
+    if (m_showStep == 2) {
+        deck = fullDeck();
+        std::shuffle(deck.begin(), deck.end(), m_rng);
+    }
+    return nextShow(deck);
+}
+
+bool Game::nextShow(const Cards &deck)
+{
+    if (m_phase != Phase::Show)
+        return false;
     if (m_showStep < 2) {
         ++m_showStep;
         applyShow();
     } else {
         m_dealer = pone();
-        dealShuffled();
+        dealFrom(deck);
     }
     return true;
 }

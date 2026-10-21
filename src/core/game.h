@@ -31,6 +31,8 @@ public:
 
     // Spreads a shuffled pack for the cut for first deal.
     void newGame();
+    // As above, spreading `cutDeck`.
+    void newGame(const Cards &cutDeck);
     // Starts a game with a fixed first dealer and no shuffling for the
     // first round; used by tests.
     void newGame(int firstDealer, const Cards &deck);
@@ -47,6 +49,8 @@ public:
     // After both have cut: on a tie, spreads a fresh pack to cut again;
     // otherwise the lower card deals the first hand.
     bool finishCut();
+    // As above, with `deck` as the fresh pack, or the deck to deal from.
+    bool finishCut(const Cards &deck);
     bool cutComplete() const { return m_cutIndex[0] >= 0 && m_cutIndex[1] >= 0; }
     bool cutTied() const { return cutComplete() && m_firstCut[0].rank == m_firstCut[1].rank; }
     // Who deals once the cut is complete and not tied, else -1.
@@ -59,6 +63,8 @@ public:
     bool sayGo(int player);
     // Advances to the next counting step; after the crib, deals a new round.
     bool nextShow();
+    // As above, dealing the new round from `deck` after the crib.
+    bool nextShow(const Cards &deck);
 
     bool canPlay(int player) const;
     bool canPlayCard(int player, const Card &card) const;
@@ -105,7 +111,6 @@ private:
     void startPlay();
     void startShow();
     void applyShow();
-    void dealShuffled();
 
     std::mt19937 m_rng;
     Phase m_phase = Phase::Discard;

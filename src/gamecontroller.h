@@ -2,6 +2,8 @@
 
 #include "core/bot.h"
 #include "core/game.h"
+#include "cards/gamelog.h"
+#include "online/session.h"
 
 #include <QObject>
 #include <QSettings>
@@ -46,17 +48,19 @@ class GameController : public QObject
     Q_PROPERTY(bool endedInShow READ endedInShow NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(bool started READ started NOTIFY changed)
+    Q_PROPERTY(QString opponent READ opponent NOTIFY changed)
     Q_PROPERTY(int gameDifficulty READ gameDifficulty NOTIFY changed)
     Q_PROPERTY(int difficulty READ difficulty WRITE setDifficulty NOTIFY difficultyChanged)
     Q_PROPERTY(QVariantList stats READ stats NOTIFY statsChanged)
     Q_PROPERTY(int scoringSpeed READ scoringSpeed WRITE setScoringSpeed NOTIFY scoringSpeedChanged)
+    Q_PROPERTY(bool tapTwice READ tapTwice WRITE setTapTwice NOTIFY tapTwiceChanged)
     Q_PROPERTY(int revealMs READ revealMs NOTIFY scoringSpeedChanged)
 
 public:
     enum Phase { Discard, Play, Show, GameOver, Cut };
     Q_ENUM(Phase)
 
-    explicit GameController(QObject *parent = nullptr);
+    explicit GameController(Session *online, QObject *parent = nullptr);
 
     int phase() const;
     int dealer() const { return m_game.dealer(); }
@@ -96,6 +100,8 @@ public:
     bool endedInShow() const;
     QString message() const { return m_message; }
     bool started() const { return m_started; }
+    // The other player's name online; empty against the bot.
+    QString opponent() const;
     int gameDifficulty() const { return static_cast<int>(m_bot.difficulty()); }
     int difficulty() const { return m_difficulty; }
     void setDifficulty(int difficulty);
@@ -103,8 +109,14 @@ public:
     // 0 = slow ... 3 = very fast; how long each score is shown.
     int scoringSpeed() const { return m_scoringSpeed; }
     void setScoringSpeed(int speed);
+    // A card is played by a second tap; the first raises it.
+    bool tapTwice() const { return m_tapTwice; }
+    void setTapTwice(bool on);
     int revealMs() const;
 
+    // Carries on the game against the bot from when the app last closed,
+    // or deals a new one.
+    Q_INVOKABLE void start();
     Q_INVOKABLE void newGame();
     Q_INVOKABLE bool cut(int index);
     Q_INVOKABLE bool discard(const QVariantList &cardIds);
@@ -122,16 +134,34 @@ signals:
     void difficultyChanged();
     void statsChanged();
     void scoringSpeedChanged();
+    void tapTwiceChanged();
 
 private:
     static constexpr int Human = 0;
     static constexpr int Computer = 1;
 
     void afterAction(int actor, const QString &announcement = QString());
+    // Runs the bot's moves, and the cut, while it is this app's to do so.
+    void schedule();
     void botStep();
+    bool isOnline() const { return m_online->active(); }
+    // Whether this app plays the bot's moves: always offline, online only for
+    // a bot's seat and only on the table's driver.
+    bool runsBot() const;
+    void sendNew();
+    // Makes a move from the table's log, if it is valid now.
+    // Makes a move: online it goes to the table's log and comes back; against
+    // the bot it is made at once and written down.
+    bool perform(const QVariantMap &action);
+    bool applyAction(const QVariantMap &action, bool live);
+    void replay();
+    void onTableChanged();
     void recordResult();
     QString describeEvents(size_t from) const;
 
+    Session *m_online;
+    // The moves of the game against the bot.
+    cards::GameLog m_log;
     cribbage::Game m_game;
     cribbage::Bot m_bot;
     QSettings m_settings;
@@ -141,6 +171,9 @@ private:
     size_t m_seenEvents = 0;
     int m_difficulty = 1;
     int m_scoringSpeed = 1;
+    bool m_tapTwice = false;
     bool m_started = false;
     bool m_recorded = false;
+    bool m_wasOnline = false;
+    bool m_wasDriver = false;
 };

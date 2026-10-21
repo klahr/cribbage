@@ -122,12 +122,12 @@ int sumCategory(const HandScore &s, Category c)
 
 TEST(card_values)
 {
-    CHECK_EQ(parseCard("AS").value(), 1);
-    CHECK_EQ(parseCard("9H").value(), 9);
-    CHECK_EQ(parseCard("10D").value(), 10);
-    CHECK_EQ(parseCard("JC").value(), 10);
-    CHECK_EQ(parseCard("QC").value(), 10);
-    CHECK_EQ(parseCard("KC").value(), 10);
+    CHECK_EQ(countValue(parseCard("AS")), 1);
+    CHECK_EQ(countValue(parseCard("9H")), 9);
+    CHECK_EQ(countValue(parseCard("10D")), 10);
+    CHECK_EQ(countValue(parseCard("JC")), 10);
+    CHECK_EQ(countValue(parseCard("QC")), 10);
+    CHECK_EQ(countValue(parseCard("KC")), 10);
 }
 
 TEST(card_ids_roundtrip_and_deck_is_complete)

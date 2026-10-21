@@ -2,7 +2,9 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import harbour.cribbage 1.0
 import "../components"
-import "../cards.js" as Cards
+import "../cards"
+import "../cards/cards.js" as Cards
+import "../online"
 
 Page {
     id: page
@@ -43,6 +45,16 @@ Page {
     readonly property var places: computePlaces()
 
     allowedOrientations: Orientation.Portrait
+
+    // Where the cards you lay away gather, on the table beside the deck
+    // the crib goes to.
+    function cribArea() {
+        var off = Math.round(cardWidth * 0.5)
+        var w = cardWidth + off
+        var left = margin + cardWidth + Theme.paddingLarge
+        return { x: left + (page.width - margin - left - w) / 2, y: cluster.y + tableRow.y + Theme.paddingLarge,
+                 width: w, height: cardHeight, off: off }
+    }
 
     function toggle(id) {
         var s = selected.slice()
@@ -243,14 +255,24 @@ Page {
             p[ids[i]] = { x: w - margin - cw - (n - 1 - i) * off, y: row1, z: 30 + i,
                           down: !botHandShown, role: "bot", delay: game.phase === Cribbage.Discard ? i * 60 : 0 }
 
-        // Your cards, centred.
+        // Your cards, centred; the ones chosen for the crib wait beside the deck.
+        var choosing = game.phase === Cribbage.Discard && !game.humanDiscarded
         ids = showing ? game.humanKept : game.hand
+        if (choosing)
+            ids = ids.filter(function(id) { return page.selected.indexOf(id) < 0 })
         n = ids.length
         off = n > 1 ? Math.min(cw * 0.76, (w - 2 * margin - cw) / (n - 1)) : 0
         x0 = (w - cw - (n - 1) * off) / 2
         for (i = 0; i < n; ++i)
             p[ids[i]] = { x: x0 + i * off, y: handY, z: 50 + i, down: false, role: showing ? "kept" : "hand",
                           delay: game.phase === Cribbage.Discard ? i * 60 : 0 }
+
+        if (choosing) {
+            var area = cribArea()
+            for (i = 0; i < page.selected.length; ++i)
+                p[page.selected[i]] = { x: area.x + i * area.off, y: area.y, z: 80 + i, down: false,
+                                        role: "layaway", delay: 0 }
+        }
 
         if (showing) {
             // The hand being counted, next to the starter.
@@ -300,6 +322,8 @@ Page {
 
     RemorsePopup { id: remorse }
 
+    ConnectionBanner { }
+
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: Math.max(page.height, cluster.y + cluster.height + Theme.paddingLarge)
@@ -314,7 +338,14 @@ Page {
                 onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
             }
             MenuItem {
+                text: online.active ? qsTr("Online table") : qsTr("Play online")
+                onClicked: pageStack.push(Qt.resolvedUrl(online.atTable ? "../online/TablePage.qml"
+                                                                        : "../online/LobbyPage.qml"))
+            }
+            MenuItem {
                 text: qsTr("New game")
+                // Online, a new game only once this one is over.
+                visible: !online.active || game.phase === Cribbage.GameOver
                 onClicked: page.startNewGame()
             }
         }
@@ -328,7 +359,8 @@ Page {
             Column {
                 id: board
                 x: margin
-                y: Theme.paddingLarge
+                // Below the notch, on phones with one.
+                y: Screen.topCutout.height + Theme.paddingLarge
                 width: parent.width - 2 * margin
 
                 ScoreTrack {
@@ -339,8 +371,8 @@ Page {
                     pegColor: Cards.playerColor(0)
                 }
                 ScoreTrack {
-                    name: qsTr("Bot")
-                    detail: page.difficultyNames[game.gameDifficulty]
+                    name: game.opponent || qsTr("Bot")
+                    detail: game.opponent ? "" : page.difficultyNames[game.gameDifficulty]
                     score: page.shownScore(1)
                     backPeg: page.backPegs[1]
                     hasCrib: game.phase !== Cribbage.Cut && game.dealer === 1
@@ -381,21 +413,6 @@ Page {
                         text: game.starter >= 0 ? qsTr("Starter") : qsTr("Deck")
                         color: Theme.secondaryColor
                         font.pixelSize: Theme.fontSizeExtraSmall
-                    }
-
-                    Label {
-                        anchors.centerIn: parent
-                        anchors.horizontalCenterOffset: (cardWidth + Theme.paddingLarge) / 2
-                        width: parent.width - 2 * (margin + cardWidth)
-                        opacity: game.phase === Cribbage.Discard ? 1 : 0
-                        visible: opacity > 0
-                        Behavior on opacity { FadeAnimation { } }
-                        wrapMode: Text.Wrap
-                        horizontalAlignment: Text.AlignHCenter
-                        text: game.humanDiscarded ? qsTr("Waiting for the cut") : qsTr("Lay away two cards")
-                        color: Theme.secondaryHighlightColor
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.family: Theme.fontFamilyHeading
                     }
 
                     Label {
@@ -446,15 +463,18 @@ Page {
                                     if (game.humanCut < 0)
                                         return qsTr("Cut for deal: tap a card. Lowest card deals.")
                                     if (game.botCut < 0)
-                                        return qsTr("The bot is cutting…")
+                                        return game.opponent ? qsTr("%1 is cutting…").arg(game.opponent)
+                                                             : qsTr("The bot is cutting…")
                                     if (game.cutTied)
                                         return qsTr("A tie. Cut again.")
                                     return game.cutDealer === 0 ? qsTr("Your card is lower. You deal.")
+                                                                : game.opponent ? qsTr("%1's card is lower and deals.").arg(game.opponent)
                                                                 : qsTr("The bot's card is lower. The bot deals.")
                                 case Cribbage.Discard:
                                     if (game.humanDiscarded)
-                                        return ""
+                                        return qsTr("Waiting for the cut")
                                     return page.humanCrib ? qsTr("Choose two cards for your crib.")
+                                                          : game.opponent ? qsTr("Choose two cards for %1's crib.").arg(game.opponent)
                                                           : qsTr("Choose two cards for the bot's crib.")
                                 case Cribbage.Play:
                                     if (game.mustSayGo)
@@ -462,7 +482,8 @@ Page {
                                     if (game.humanTurn)
                                         return qsTr("Your turn. Tap a card to play it.")
                                     if (game.botTurn)
-                                        return qsTr("The bot is thinking…")
+                                        return game.opponent ? qsTr("%1 is thinking…").arg(game.opponent)
+                                                             : qsTr("The bot is thinking…")
                                 }
                                 return ""
                             }
@@ -488,8 +509,10 @@ Page {
                             Label {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: game.showStep === 2
-                                      ? (game.showOwner === 0 ? qsTr("Your crib") : qsTr("Bot's crib"))
-                                      : (game.showOwner === 0 ? qsTr("Your hand") : qsTr("Bot's hand"))
+                                      ? (game.showOwner === 0 ? qsTr("Your crib")
+                                         : game.opponent ? qsTr("%1's crib").arg(game.opponent) : qsTr("Bot's crib"))
+                                      : (game.showOwner === 0 ? qsTr("Your hand")
+                                         : game.opponent ? qsTr("%1's hand").arg(game.opponent) : qsTr("Bot's hand"))
                                 color: Cards.playerColor(game.showOwner)
                                 font.pixelSize: Theme.fontSizeLarge
                                 font.family: Theme.fontFamilyHeading
@@ -547,7 +570,8 @@ Page {
                         Label {
                             width: parent.width
                             horizontalAlignment: Text.AlignHCenter
-                            text: game.winner === 0 ? qsTr("You won") : qsTr("The bot won")
+                            text: game.winner === 0 ? qsTr("You won")
+                                  : game.opponent ? qsTr("%1 won").arg(game.opponent) : qsTr("The bot won")
                             color: Cards.playerColor(game.winner)
                             font.pixelSize: Theme.fontSizeHuge
                             font.family: Theme.fontFamilyHeading
@@ -564,8 +588,10 @@ Page {
                                 else if (game.skunk === 1)
                                     line += " · " + qsTr("Skunk!")
                                 var how = game.endedInShow
-                                        ? (game.winner === 0 ? qsTr("You counted out.") : qsTr("The bot counted out."))
-                                        : (game.winner === 0 ? qsTr("You pegged out.") : qsTr("The bot pegged out."))
+                                        ? (game.winner === 0 ? qsTr("You counted out.")
+                                           : game.opponent ? qsTr("%1 counted out.").arg(game.opponent) : qsTr("The bot counted out."))
+                                        : (game.winner === 0 ? qsTr("You pegged out.")
+                                           : game.opponent ? qsTr("%1 pegged out.").arg(game.opponent) : qsTr("The bot pegged out."))
                                 return line + "\n" + how
                             }
                             color: Theme.secondaryHighlightColor
@@ -592,7 +618,8 @@ Page {
                         Button {
                             visible: game.phase === Cribbage.Discard && !game.humanDiscarded
                             enabled: page.selected.length === 2
-                            text: page.humanCrib ? qsTr("To your crib") : qsTr("To bot's crib")
+                            text: page.humanCrib ? qsTr("To your crib")
+                                  : game.opponent ? qsTr("To %1's crib").arg(game.opponent) : qsTr("To bot's crib")
                             onClicked: game.discard(page.selected)
                         }
                         Button {
@@ -614,29 +641,33 @@ Page {
                 }
             }
 
+            // The area the cards you lay away gather in.
+            ChoiceArea {
+                area: page.cribArea()
+                color: Cards.playerColor(page.humanCrib ? 0 : 1)
+                text: page.humanCrib ? qsTr("Two cards for your crib")
+                      : game.opponent ? qsTr("Two cards for %1's crib").arg(game.opponent)
+                      : qsTr("Two cards for the bot's crib")
+                empty: page.selected.length === 0
+                shown: game.phase === Cribbage.Discard && !game.humanDiscarded
+            }
+
             // ---------------------------------------------------- cards
+            TapToPlay {
+                id: tapToPlay
+                twice: game.tapTwice
+            }
+
             // All 52 cards live here and glide to wherever the game puts them.
             Repeater {
                 model: 52
-                PlayingCard {
-                    id: card
-
-                    readonly property var place: page.places[index]
+                TableCard {
                     readonly property bool inHand: place.role === "hand"
-                    property int moveDelay
-                    property bool ready
 
-                    function moveToPlace() {
-                        moveDelay = place.delay
-                        x = place.x
-                        y = place.y
-                    }
-
+                    place: page.places[index]
                     width: cardWidth
                     cardId: index
-                    faceDown: place.down
-                    z: place.z
-                    selected: inHand && page.selected.indexOf(index) >= 0
+                    selected: tapToPlay.raised === index
                     glowing: place.role === "drawn"
                              || (page.current !== null && page.current.cards.indexOf(index) >= 0)
                     // Kept by the label while the glow fades out.
@@ -644,36 +675,17 @@ Page {
                     // game.count makes these follow the play.
                     dimmed: inHand && game.humanTurn && game.count >= 0 && !game.canPlay(index)
                     enabled: place.role === "cut" ? game.humanCut < 0
-                             : inHand && (game.phase === Cribbage.Discard ? !game.humanDiscarded
+                             : place.role === "layaway" || inHand && (game.phase === Cribbage.Discard ? !game.humanDiscarded
                                                                          : game.humanTurn && game.count >= 0 && game.canPlay(index))
 
-                    onPlaceChanged: moveToPlace()
-                    Component.onCompleted: {
-                        moveToPlace()
-                        ready = true
-                    }
+                    onEnabledChanged: if (!enabled) tapToPlay.lower(index)
                     onClicked: {
                         if (place.role === "cut")
                             game.cut(place.line)
                         else if (game.phase === Cribbage.Discard)
                             page.toggle(index)
-                        else
+                        else if (tapToPlay.tap(index))
                             game.play(index)
-                    }
-
-                    Behavior on x {
-                        enabled: card.ready
-                        SequentialAnimation {
-                            PauseAnimation { duration: card.moveDelay }
-                            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
-                        }
-                    }
-                    Behavior on y {
-                        enabled: card.ready
-                        SequentialAnimation {
-                            PauseAnimation { duration: card.moveDelay }
-                            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
-                        }
                     }
                 }
             }

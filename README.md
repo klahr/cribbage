@@ -8,10 +8,16 @@ Two-player cribbage against a bot for Sailfish OS.
 - A bot in three levels: Easy plays at random, Medium keeps the best hand, Hard weighs
   every possible starter and the crib and plays to deny you points
 - A peg board with front and back pegs and skunk lines, and won and lost games per level
+- Play online against a friend through [cards-server](https://github.com/klahr/cards-server),
+  in an open game or one with a password
 
 Needs Sailfish OS 5.1 or newer, on aarch64 or armv7hl.
 
 ## Building
+
+Online play is shared with the other card games in the
+[sailfish-cards](https://github.com/klahr/sailfish-cards) submodule, so clone with
+`git clone --recursive`, or run `git submodule update --init` in an existing clone.
 
 With the [Sailfish SDK](https://docs.sailfishos.org/Tools/Sailfish_SDK/), from the source directory:
 

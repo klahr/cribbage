@@ -9,4 +9,4 @@ Name[sv]=Cribbage
 [X-Sailjail]
 OrganizationName=rs.r8
 ApplicationName=harbour-cribbage
-Permissions=
+Permissions=Internet

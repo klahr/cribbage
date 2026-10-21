@@ -199,7 +199,7 @@ Card Bot::playThoughtful(const Game &game, int player, const Cards &legal)
             // What the opponent is likely to peg in reply.
             double reply = 0;
             for (const Card &u : unseen) {
-                if (count + u.value() > 31)
+                if (count + countValue(u) > 31)
                     continue;
                 Cards next = pile;
                 next.push_back(u);
@@ -213,13 +213,13 @@ Card Bot::playThoughtful(const Game &game, int player, const Cards &legal)
         if (opponentOut) {
             int follow = 0;
             for (const Card &k : game.hand(player))
-                if (k != c && count + k.value() <= 31)
+                if (k != c && count + countValue(k) <= 31)
                     ++follow;
             value += 0.3 * follow;
         }
-        if (game.pile().empty() && c.value() == 5)
+        if (game.pile().empty() && countValue(c) == 5)
             value -= 1.0;
-        value += 0.01 * c.value();
+        value += 0.01 * countValue(c);
 
         if (value > best) {
             best = value;

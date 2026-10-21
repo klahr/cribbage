@@ -1,6 +1,11 @@
 #include "gamecontroller.h"
 
+#include "cards/settings.h"
+#include "cards/variant.h"
+
 #include <QVariantMap>
+
+#include <algorithm>
 
 using namespace cribbage;
 
@@ -20,32 +25,37 @@ QString cardText(const Card &c)
     return QString::fromLatin1(ranks[c.rank - 1]) + suits[c.suit];
 }
 
-QVariantList ids(const Cards &cards)
+QVariantList shuffledDeck()
 {
-    QVariantList out;
-    for (const Card &c : cards)
-        out << c.id();
-    return out;
-}
-
-Cards fromIds(const QVariantList &list)
-{
-    Cards out;
-    for (const QVariant &v : list)
-        out.push_back(Card::fromId(v.toInt()));
-    return out;
+    static std::mt19937 rng{std::random_device{}()};
+    Cards deck = fullDeck();
+    std::shuffle(deck.begin(), deck.end(), rng);
+    return ids(deck);
 }
 
 } // namespace
 
-GameController::GameController(QObject *parent)
+GameController::GameController(Session *online, QObject *parent)
     : QObject(parent)
+    , m_online(online)
+    , m_settings(cards::settingsPath(), QSettings::IniFormat)
 {
     m_difficulty = qBound(0, m_settings.value(QStringLiteral("difficulty"), 1).toInt(), 2);
     m_scoringSpeed = qBound(0, m_settings.value(QStringLiteral("scoringSpeed"), 1).toInt(), 3);
+    m_tapTwice = m_settings.value(QStringLiteral("tapTwice"), false).toBool();
     m_botTimer.setSingleShot(true);
     m_botTimer.setInterval(BotDelayMs);
     connect(&m_botTimer, &QTimer::timeout, this, &GameController::botStep);
+
+    connect(m_online, &Session::reset, this, [this]() {
+        if (isOnline())
+            replay();
+    });
+    connect(m_online, &Session::action, this, [this](const QVariantMap &action) {
+        if (isOnline())
+            applyAction(action, true);
+    });
+    connect(m_online, &Session::tableChanged, this, &GameController::onTableChanged);
 }
 
 int GameController::phase() const
@@ -63,6 +73,11 @@ int GameController::phase() const
         break;
     }
     return GameOver;
+}
+
+QString GameController::opponent() const
+{
+    return isOnline() ? m_online->playerName(m_online->toTable(Computer)) : QString();
 }
 
 QVariantList GameController::hand() const
@@ -185,6 +200,15 @@ void GameController::setScoringSpeed(int speed)
     emit scoringSpeedChanged();
 }
 
+void GameController::setTapTwice(bool on)
+{
+    if (on == m_tapTwice)
+        return;
+    m_tapTwice = on;
+    m_settings.setValue(QStringLiteral("tapTwice"), on);
+    emit tapTwiceChanged();
+}
+
 int GameController::revealMs() const
 {
     return RevealMs[m_scoringSpeed];
@@ -210,56 +234,90 @@ void GameController::resetStats()
     emit statsChanged();
 }
 
-void GameController::newGame()
+void GameController::start()
 {
+    if (isOnline())
+        return;
     m_botTimer.stop();
-    m_bot.setDifficulty(static_cast<Difficulty>(m_difficulty));
-    m_game.newGame();
-    m_started = true;
-    m_recorded = false;
-    m_seenEvents = 0;
+    m_game = Game();
+    m_started = false;
+    bool ok = true;
+    for (const QVariant &action : m_log.load())
+        ok = ok && applyAction(action.toMap(), false);
+    if (!ok || !m_started) {
+        newGame();
+        return;
+    }
+    // A finished game was counted before the app closed.
+    m_recorded = m_game.phase() == cribbage::Phase::GameOver;
+    m_seenEvents = m_game.events().size();
     m_message.clear();
     afterAction(-1);
 }
 
+void GameController::newGame()
+{
+    if (isOnline()) {
+        if (m_game.phase() == cribbage::Phase::GameOver)
+            sendNew();
+        return;
+    }
+    m_botTimer.stop();
+    m_log.clear();
+    m_started = false;
+    m_recorded = false;
+    perform({{QStringLiteral("t"), QStringLiteral("new")},
+             {QStringLiteral("difficulty"), m_difficulty},
+             {QStringLiteral("cut"), shuffledDeck()}});
+}
+
 bool GameController::cut(int index)
 {
-    if (!m_game.cut(Human, index))
+    Game trial = m_game;
+    if (!m_started || !trial.cut(Human, index))
         return false;
-    afterAction(Human);
-    return true;
+    return perform({{QStringLiteral("t"), QStringLiteral("cut")},
+                    {QStringLiteral("seat"), m_online->toTable(Human)},
+                    {QStringLiteral("index"), index}});
 }
 
 bool GameController::discard(const QVariantList &cardIds)
 {
-    if (!m_started || !m_game.discard(Human, fromIds(cardIds)))
+    Game trial = m_game;
+    Cards cards;
+    if (!m_started || !cardsFrom(cardIds, &cards) || !trial.discard(Human, cards))
         return false;
-    afterAction(Human);
-    return true;
+    return perform({{QStringLiteral("t"), QStringLiteral("discard")},
+                    {QStringLiteral("seat"), m_online->toTable(Human)},
+                    {QStringLiteral("cards"), cardIds}});
 }
 
 bool GameController::play(int cardId)
 {
-    if (!humanTurn() || !m_game.play(Human, Card::fromId(cardId)))
+    if (!canPlay(cardId))
         return false;
-    afterAction(Human);
-    return true;
+    return perform({{QStringLiteral("t"), QStringLiteral("play")},
+                    {QStringLiteral("seat"), m_online->toTable(Human)},
+                    {QStringLiteral("card"), cardId}});
 }
 
 bool GameController::sayGo()
 {
-    if (!m_game.sayGo(Human))
+    if (!m_game.mustSayGo(Human))
         return false;
-    afterAction(Human, tr("You say go."));
-    return true;
+    return perform({{QStringLiteral("t"), QStringLiteral("go")}, {QStringLiteral("seat"), m_online->toTable(Human)}});
 }
 
 bool GameController::nextShow()
 {
-    if (!m_game.nextShow())
+    // Either player may move the show on; the step stops a second press
+    // from skipping one.
+    if (m_game.phase() != cribbage::Phase::Show)
         return false;
-    afterAction(-1);
-    return true;
+    return perform({{QStringLiteral("t"), QStringLiteral("next")},
+                    {QStringLiteral("round"), m_game.round()},
+                    {QStringLiteral("step"), m_game.showStep()},
+                    {QStringLiteral("deck"), shuffledDeck()}});
 }
 
 bool GameController::canPlay(int cardId) const
@@ -273,7 +331,7 @@ QVariantList GameController::hint()
     if (m_game.phase() == cribbage::Phase::Discard && !m_game.hasDiscarded(Human))
         return ids(advisor.chooseDiscard(m_game.hand(Human), m_game.dealer() == Human));
     if (humanTurn() && m_game.canPlay(Human))
-        return ids({advisor.choosePlay(m_game, Human)});
+        return ids(Cards{advisor.choosePlay(m_game, Human)});
     return QVariantList();
 }
 
@@ -318,7 +376,7 @@ QString GameController::describeEvents(size_t from) const
     if (!human.isEmpty())
         parts << tr("You: %1").arg(human.join(QStringLiteral(", ")));
     if (!bot.isEmpty())
-        parts << tr("Bot: %1").arg(bot.join(QStringLiteral(", ")));
+        parts << tr("%1: %2").arg(opponent().isEmpty() ? tr("Bot") : opponent(), bot.join(QStringLiteral(", ")));
     return parts.join(QStringLiteral(" · "));
 }
 
@@ -343,10 +401,11 @@ void GameController::afterAction(int actor, const QString &announcement)
         parts << announcement;
     if (m_game.phase() == cribbage::Phase::GameOver) {
         const bool human = m_game.winner() == Human;
+        const QString name = opponent();
         if (endedInShow())
-            parts << (human ? tr("You counted out.") : tr("The bot counted out."));
+            parts << (human ? tr("You counted out.") : name.isEmpty() ? tr("The bot counted out.") : tr("%1 counted out.").arg(name));
         else
-            parts << (human ? tr("You pegged out.") : tr("The bot pegged out."));
+            parts << (human ? tr("You pegged out.") : name.isEmpty() ? tr("The bot pegged out.") : tr("%1 pegged out.").arg(name));
     }
     if (!scored.isEmpty())
         parts << scored;
@@ -356,47 +415,77 @@ void GameController::afterAction(int actor, const QString &announcement)
     if (m_game.phase() == cribbage::Phase::GameOver)
         recordResult();
 
-    // The bot lays away as soon as the cards are dealt.
-    if (m_game.phase() == cribbage::Phase::Discard && !m_game.hasDiscarded(Computer))
-        m_game.discard(Computer, m_bot.chooseDiscard(m_game.hand(Computer), m_game.dealer() == Computer));
+    schedule();
+    emit changed();
+}
 
-    if (m_game.phase() == cribbage::Phase::Cut && m_game.cutIndex(Human) >= 0) {
+void GameController::schedule()
+{
+    // Online only the driver moves the game on, and plays a bot's seat.
+    if (!m_started || (isOnline() && !m_online->driver())) {
+        m_botTimer.stop();
+        return;
+    }
+    const bool bot = runsBot();
+
+    // The bot lays away as soon as the cards are dealt.
+    if (bot && m_game.phase() == cribbage::Phase::Discard && !m_game.hasDiscarded(Computer)) {
+        const QVariantMap action = {{QStringLiteral("t"), QStringLiteral("discard")},
+                                    {QStringLiteral("seat"), m_online->toTable(Computer)},
+                                    {QStringLiteral("cards"), ids(m_bot.chooseDiscard(m_game.hand(Computer), m_game.dealer() == Computer))}};
+        if (isOnline())
+            m_online->send(action);
+        else if (applyAction(action, false))
+            m_log.append(action);
+    }
+
+    if (m_game.phase() == cribbage::Phase::Cut && (m_game.cutComplete() || (bot && m_game.cutIndex(Human) >= 0))) {
         // The bot cuts after you, then both cards stay up for a moment.
         m_botTimer.setInterval(m_game.cutComplete() ? CutResultMs : BotDelayMs);
         m_botTimer.start();
-    } else if (botTurn()) {
+    } else if (bot && botTurn()) {
         // Let the table finish showing the points before the bot plays on.
         m_botTimer.setInterval(BotDelayMs + revealMs() * m_lastScoring.size());
         m_botTimer.start();
     }
-    emit changed();
 }
 
 void GameController::botStep()
 {
+    if (isOnline() && !m_online->driver())
+        return;
     if (m_game.phase() == cribbage::Phase::Cut) {
         if (m_game.cutComplete())
-            m_game.finishCut();
-        else
-            m_game.cut(Computer, m_bot.chooseCut(m_game, Computer));
-        afterAction(Computer);
+            perform({{QStringLiteral("t"), QStringLiteral("finish")}, {QStringLiteral("deck"), shuffledDeck()}});
+        else if (runsBot() && m_game.cutIndex(Computer) < 0)
+            perform({{QStringLiteral("t"), QStringLiteral("cut")},
+                     {QStringLiteral("seat"), m_online->toTable(Computer)},
+                     {QStringLiteral("index"), m_bot.chooseCut(m_game, Computer)}});
         return;
     }
-    if (!botTurn())
+    if (!runsBot() || !botTurn())
         return;
-    if (m_game.mustSayGo(Computer)) {
-        m_game.sayGo(Computer);
-        afterAction(Computer, tr("The bot says go."));
-        return;
+    if (m_game.mustSayGo(Computer))
+        perform({{QStringLiteral("t"), QStringLiteral("go")}, {QStringLiteral("seat"), m_online->toTable(Computer)}});
+    else
+        perform({{QStringLiteral("t"), QStringLiteral("play")},
+                 {QStringLiteral("seat"), m_online->toTable(Computer)},
+                 {QStringLiteral("card"), m_bot.choosePlay(m_game, Computer).id()}});
+}
+
+bool GameController::perform(const QVariantMap &action)
+{
+    if (isOnline()) {
+        m_online->send(action);
+        return true;
     }
-    const Card card = m_bot.choosePlay(m_game, Computer);
-    m_game.play(Computer, card);
-    afterAction(Computer, tr("The bot plays %1.").arg(cardText(card)));
+    return applyAction(action, true);
 }
 
 void GameController::recordResult()
 {
-    if (m_recorded)
+    // Statistics are for games against the bot.
+    if (m_recorded || isOnline())
         return;
     m_recorded = true;
     const QString key = QStringLiteral("stats/%1/").arg(gameDifficulty());
@@ -405,4 +494,108 @@ void GameController::recordResult()
     if (m_game.winner() == Human && m_game.skunk() > 0)
         m_settings.setValue(key + QStringLiteral("skunks"), m_settings.value(key + QStringLiteral("skunks"), 0).toInt() + 1);
     emit statsChanged();
+}
+
+bool GameController::runsBot() const
+{
+    return !isOnline() || (m_online->driver() && m_online->isBot(m_online->toTable(Computer)));
+}
+
+void GameController::sendNew()
+{
+    m_online->send({{QStringLiteral("t"), QStringLiteral("new")}, {QStringLiteral("cut"), shuffledDeck()}});
+}
+
+bool GameController::applyAction(const QVariantMap &action, bool live)
+{
+    const QString t = action.value(QStringLiteral("t")).toString();
+    const int seat = action.value(QStringLiteral("seat"), -1).toInt();
+    const int player = m_online->toLocal(seat);
+    int actor = player;
+    QString announcement;
+    Cards cards;
+    bool ok = false;
+    if (t == QLatin1String("new")) {
+        // Both players may ask for the next game; the first one starts it.
+        ok = (!m_started || m_game.phase() == cribbage::Phase::GameOver)
+             && deckFrom(action.value(QStringLiteral("cut")), &cards);
+        if (ok) {
+            m_bot.setDifficulty(static_cast<Difficulty>(qBound(0, action.value(QStringLiteral("difficulty"), m_difficulty).toInt(), 2)));
+            m_game.newGame(cards);
+            m_started = true;
+            m_seenEvents = 0;
+            m_message.clear();
+            actor = -1;
+        }
+    } else if (t == QLatin1String("finish")) {
+        ok = deckFrom(action.value(QStringLiteral("deck")), &cards) && m_game.finishCut(cards);
+        actor = Computer;
+    } else if (t == QLatin1String("next")) {
+        ok = action.value(QStringLiteral("round")).toInt() == m_game.round()
+             && action.value(QStringLiteral("step")).toInt() == m_game.showStep()
+             && deckFrom(action.value(QStringLiteral("deck")), &cards) && m_game.nextShow(cards);
+        actor = -1;
+    } else if (player < 0) {
+        return false;
+    } else if (t == QLatin1String("cut")) {
+        ok = m_game.cut(player, action.value(QStringLiteral("index"), -1).toInt());
+    } else if (t == QLatin1String("discard")) {
+        ok = cardsFrom(action.value(QStringLiteral("cards")), &cards) && m_game.discard(player, cards);
+    } else if (t == QLatin1String("play")) {
+        const int id = action.value(QStringLiteral("card"), -1).toInt();
+        ok = id >= 0 && id < 52 && m_game.play(player, Card::fromId(id));
+        if (ok && player != Human)
+            announcement = opponent().isEmpty() ? tr("The bot plays %1.").arg(cardText(Card::fromId(id)))
+                                                : tr("%1 plays %2.").arg(opponent(), cardText(Card::fromId(id)));
+    } else if (t == QLatin1String("go")) {
+        ok = m_game.sayGo(player);
+        announcement = player == Human ? tr("You say go.")
+                       : opponent().isEmpty() ? tr("The bot says go.") : tr("%1 says go.").arg(opponent());
+    }
+    // Against the bot, each move is written down as it is made.
+    if (ok && live && !isOnline())
+        m_log.append(action);
+    if (ok && live)
+        afterAction(actor, announcement);
+    return ok;
+}
+
+void GameController::replay()
+{
+    m_botTimer.stop();
+    m_game = Game();
+    m_started = false;
+    m_recorded = false;
+    for (const QVariant &action : m_online->actions())
+        applyAction(action.toMap(), false);
+    m_seenEvents = m_game.events().size();
+    m_message.clear();
+    m_wasDriver = m_online->driver();
+    if (m_online->synced() && m_online->actions().isEmpty() && m_online->driver())
+        sendNew();
+    afterAction(-1);
+}
+
+void GameController::onTableChanged()
+{
+    const bool online = isOnline();
+    if (online != m_wasOnline) {
+        m_wasOnline = online;
+        m_wasDriver = false;
+        // Off the table, your game against the bot is back; on it, the game
+        // waits for the log.
+        if (online)
+            replay();
+        else
+            start();
+        return;
+    }
+    if (online) {
+        // The driver may have changed, or a bot taken over an absent player.
+        if (m_online->driver() && !m_wasDriver && m_online->synced() && m_online->actions().isEmpty())
+            sendNew();
+        m_wasDriver = m_online->driver();
+        schedule();
+    }
+    emit changed();
 }

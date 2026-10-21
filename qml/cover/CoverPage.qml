@@ -1,7 +1,7 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import harbour.cribbage 1.0
-import "../cards.js" as Cards
+import "../cards/cards.js" as Cards
 
 CoverBackground {
     Column {
@@ -20,7 +20,7 @@ CoverBackground {
         Repeater {
             model: [
                 { name: qsTr("You"), score: game.humanScore, color: Cards.playerColor(0) },
-                { name: qsTr("Bot"), score: game.botScore, color: Cards.playerColor(1) }
+                { name: game.opponent || qsTr("Bot"), score: game.botScore, color: Cards.playerColor(1) }
             ]
             Item {
                 width: parent.width
@@ -54,7 +54,8 @@ CoverBackground {
                 case Cribbage.Play: return qsTr("Count %1").arg(game.count)
                 case Cribbage.Show: return qsTr("Counting hands")
                 }
-                return game.winner === 0 ? qsTr("You won") : qsTr("The bot won")
+                return game.winner === 0 ? qsTr("You won")
+                       : game.opponent ? qsTr("%1 won").arg(game.opponent) : qsTr("The bot won")
             }
         }
     }
