@@ -81,7 +81,9 @@ Page {
     }
 
     // A line about one player, in their colour.
-    function coloured(player, text) { return "<font color=\"" + Cards.playerColor(player) + "\">" + text + "</font>" }
+    // Grey and faint for a player who has lost the connection, until a bot plays for them.
+    function seatColor(player) { return online.seats.length && online.away(online.toTable(player)) ? Cards.awayColor(player) : Cards.playerColor(player) }
+    function coloured(player, text) { return "<font color=\"" + seatColor(player) + "\">" + text + "</font>" }
 
     function shownScore(player) {
         var real = player === 0 ? game.humanScore : game.botScore
