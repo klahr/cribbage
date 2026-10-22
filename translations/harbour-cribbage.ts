@@ -624,6 +624,10 @@
         <source>The player has gone</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Update the app to play online</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsPage</name>
